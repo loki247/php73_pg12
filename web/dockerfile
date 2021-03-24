@@ -1,0 +1,40 @@
+FROM php:7.3.1-apache
+
+ENV HOME /root
+
+RUN apt-get update && apt-get install -y libmcrypt-dev
+
+RUN apt-get -yqq update && apt-get -yqq upgrade && apt-get -y install git zip unzip vim nano software-properties-common libxrender1 libfontconfig sudo && apt-get -yqq install exiftool && docker-php-ext-configure exif && docker-php-ext-install exif && docker-php-ext-enable exif && cd ~ && curl -sS https://getcomposer.org/installer -o composer-setup.php && php composer-setup.php --install-dir=/usr/local/bin --filename=composer && curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash - && sudo apt-get install -y nodejs && cd /var/www/html
+
+RUN apt-get install nano
+RUN mkdir /var/www/app/
+
+# lumen packages
+RUN apt-get install -y  libpq-dev libzip-dev libxml2-dev libpng-dev zip\
+    && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql\
+      && docker-php-ext-install zip\
+    && docker-php-ext-configure zip --with-libzip\
+    && docker-php-ext-install xml\
+    && docker-php-ext-install gd\
+    && docker-php-ext-install mbstring tokenizer pdo_pgsql pgsql\
+    && apt-get install -y libz-dev libmemcached-dev \
+    && pecl install memcached \
+    && echo extension=memcached.so >> /usr/local/etc/php/conf.d/memcached.ini
+
+#-----
+
+ADD configs/lumen.conf /etc/apache2/sites-available/lumen.conf
+RUN a2dissite 000-default.conf && a2ensite lumen.conf && a2enmod rewrite
+
+
+RUN apt-get clean -y
+
+#Cambios
+#RUN apt-get install libxrender1
+#RUN apt-get install libfontconfig
+#-----
+
+WORKDIR /var/www/
+
+
+

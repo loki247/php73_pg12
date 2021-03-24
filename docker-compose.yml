@@ -1,0 +1,33 @@
+version: '3.5'
+services: 
+  db:
+    env_file:
+      - ./.env
+    image: ${DB_IMAGE}
+    container_name: ${NOMBRE_DB}
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
+    ports:
+      - "${PG_PORT}:5432"
+    restart: always
+    environment:
+      - POSTGRES_USER:postgres
+      - POSTGRES_PASSWORD:${DB_PASS}
+    networks: [
+      default
+    ]
+  web:
+    env_file:
+      - ./.env
+    build:
+      context: ./web
+    container_name: ${NOMBRE_WEB}
+    working_dir: /var/www/html
+    volumes:
+      - "${VOLUME_WEB}:/var/www/html"
+    ports:
+      - "${PHP_PORT}:80"
+    restart: always
+    networks: [
+      default
+    ]
